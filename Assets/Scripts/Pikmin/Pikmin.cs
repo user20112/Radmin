@@ -1,0 +1,247 @@
+﻿using DG.Tweening;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.AI;
+
+[SelectionBase]
+public class Pikmin : MonoBehaviour
+{
+    [HideInInspector]
+    public NavMeshAgent agent = default;
+
+    public Rigidbody rigidBody = default;
+
+    public TrailRenderer Trail;
+    public ParticleSystem ParticleTrail;
+    public ParticleSystem LeafParticle;
+    public ParticleSystem ActivationParticle;
+    public Transform Model;
+    private Coroutine UpdateTarget = default;
+    private PikminState state = PikminState.Idle;
+
+    public PikminState State
+    {
+        get
+        {
+            return state;
+        }
+        set
+        {
+            state = value;
+            switch (value)
+            {
+                case PikminState.Idle:
+                    LeafParticle.Play();
+                    break;
+
+                case PikminState.Follow:
+                    ActivationParticle.Play();
+                    LeafParticle.Clear();
+                    LeafParticle.Stop();
+                    break;
+
+                case PikminState.Carrying:
+                case PikminState.Attacking:
+                case PikminState.MovingIntoPosition:
+                case PikminState.MoveStickFollow:
+                case PikminState.InAir:
+                    LeafParticle.Clear();
+                    LeafParticle.Stop();
+                    break;
+            }
+        }
+    }
+
+    public Interactable Objective;
+    public PikminEvent OnStartFollow;
+    public PikminEvent OnStartThrow;
+    public PikminEvent OnEndThrow;
+    public PikminEvent OnStartCarry;
+    public PikminEvent OnEndCarry;
+    public float JumpMultiplier = 1;
+
+    private void Awake()
+    {
+        agent = GetComponent<NavMeshAgent>();
+        rigidBody = GetComponent<Rigidbody>();
+        OnStartFollow.AddListener((x) => StartFollow(x));
+        OnStartThrow.AddListener((x) => StartThrow(x));
+        OnEndThrow.AddListener((x) => EndThrow(x));
+    }
+
+    public void StartFollow(int num)
+    {
+        transform.DOJump(transform.position, .4f, 1, .3f);
+        transform.DOPunchScale(-Vector3.up / 2, .3f, 10, 1).SetDelay(UnityEngine.Random.Range(0, .1f));
+    }
+
+    public void StartThrow(int num)
+    {
+        Trail.Clear();
+        Trail.emitting = true;
+    }
+
+    public void EndThrow(int num)
+    {
+        ParticleTrail.Stop();
+        Trail.emitting = false;
+    }
+
+    public virtual void Start()
+    {
+        Physics.IgnoreLayerCollision(7, 9);
+        Trail = GetComponentInChildren<TrailRenderer>();
+        Trail.emitting = false;
+    }
+
+    public virtual void Update()
+    {
+    }
+
+    private float onMeshThreshold = .1f;
+
+    public bool IsPikminOnNavMesh()
+    {
+        Vector3 agentPosition = agent.transform.position;
+        NavMeshHit hit;
+
+        // Check for nearest point on navmesh to agent, within onMeshThreshold
+        if (NavMesh.SamplePosition(agentPosition, out hit, onMeshThreshold, NavMesh.AllAreas))
+        {
+            // Check if the positions are vertically aligned
+            if (Mathf.Approximately(agentPosition.x, hit.position.x) && Mathf.Approximately(agentPosition.z, hit.position.z))
+            {
+                // Lastly, check if object is below navmesh
+                return agentPosition.y >= hit.position.y;
+            }
+        }
+
+        return false;
+    }
+
+    public virtual void FixedUpdate()
+    {
+        if (State == PikminState.Idle)
+        {
+            CheckInteraction();
+        }
+        if (agent.isOnNavMesh || agent.isOnOffMeshLink || IsPikminOnNavMesh())
+        {
+            if (State == PikminState.InAir)
+            {
+                State = PikminState.Idle;
+                OnEndThrow.Invoke(0);
+            }
+            agent.enabled = true;
+            rigidBody.isKinematic = true;
+        }
+        else
+        {
+            agent.enabled = false;
+            rigidBody.isKinematic = false;
+            rigidBody.useGravity = true;
+            rigidBody.WakeUp();
+        }
+    }
+
+    public void SetTarget(Transform target, float updateTime = 1f)
+    {
+        if (Objective != null)
+        {
+            transform.parent = null;
+            agent.enabled = true;
+            Objective.ReleasePikmin(this);
+            Objective = null;
+        }
+        State = PikminState.Follow;
+        OnStartFollow.Invoke(0);
+        if (this.UpdateTarget != null)
+            StopCoroutine(this.UpdateTarget);
+        WaitForSeconds wait = new WaitForSeconds(updateTime);
+        this.UpdateTarget = StartCoroutine(UpdateTarget());
+        IEnumerator UpdateTarget()
+        {
+            while (true)
+            {
+                if (agent.enabled)
+                    agent.SetDestination(target.position);
+                yield return wait;
+            }
+        }
+    }
+
+    public void Throw(Vector3 target, float time, float delay)
+    {
+        OnStartThrow.Invoke(0);
+        State = PikminState.InAir;
+        if (UpdateTarget != null)
+            StopCoroutine(UpdateTarget);
+        agent.enabled = false;
+        rigidBody.isKinematic = false;
+        rigidBody.useGravity = true;
+        rigidBody.WakeUp();
+        Vector3 gravity = Physics.gravity;
+        Vector3 PosDif = target - transform.position;
+        //float TimeInAir = .5f * JumpMultiplier;
+        //Vector3 Velocity = new Vector3(PosDif.x * TimeInAir, -1 * TimeInAir * gravity.y, PosDif.z * TimeInAir);
+        //rigidBody.velocity += Velocity;
+        transform.DOJump(target, 2, 1, time).SetDelay(delay).SetEase(Ease.Linear).OnComplete(() =>
+        {
+            State = PikminState.Idle;
+            OnEndThrow.Invoke(0);
+        });
+        transform.LookAt(new Vector3(target.x, transform.position.y, target.z));
+        Model.DOLocalRotate(new Vector3(360 * 3, 0, 0), time, RotateMode.LocalAxisAdd).SetDelay(delay);
+    }
+
+    public void SetCarrying(bool on)
+    {
+        if (on)
+            OnStartCarry.Invoke(0);
+        else
+            OnEndCarry.Invoke(0);
+    }
+
+    public void SetIdle()
+    {
+        Objective = null;
+        agent.enabled = true;
+        transform.parent = null;
+        State = PikminState.Idle;
+        OnEndThrow.Invoke(0);
+    }
+
+    private void CheckInteraction()
+    {
+        Collider[] colliders = Physics.OverlapSphere(transform.position, 2.5f);
+        if (colliders.Length == 0)
+            return;
+        List<Collider> Colliders = new List<Collider>();
+        foreach (Collider collider in colliders)
+            Colliders.Add(collider);
+        Colliders.Sort(comparer);
+        foreach (Collider collider in Colliders)
+        {
+            Interactable InteractableObject = collider.GetComponent<Interactable>();
+            if (InteractableObject != null && InteractableObject.IsInteractable())
+            {
+                Objective = InteractableObject;
+                Objective.AssignPikmin(this);
+                break;
+            }
+        }
+        OnEndThrow.Invoke(0);
+    }
+
+    private int comparer(Collider x, Collider y)
+    {
+        float DistanceToX = (x.transform.position.x - transform.position.x) * (x.transform.position.x - transform.position.x) + (x.transform.position.y - transform.position.y) * (x.transform.position.y - transform.position.y) + (x.transform.position.z - transform.position.z) * (x.transform.position.z - transform.position.z);
+        float DistanceToY = (y.transform.position.x - transform.position.x) * (y.transform.position.x - transform.position.x) + (y.transform.position.y - transform.position.y) * (y.transform.position.y - transform.position.y) + (y.transform.position.z - transform.position.z) * (y.transform.position.z - transform.position.z);
+        if (DistanceToX < DistanceToY)
+            return -1;
+        else if (DistanceToX > DistanceToY)
+            return 1;
+        return 0;
+    }
+}

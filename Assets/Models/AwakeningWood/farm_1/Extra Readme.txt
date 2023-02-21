@@ -1,0 +1,1 @@
+This model uses vertex coloring along with a texture, but it only shows up after importing the .DAE variant.
