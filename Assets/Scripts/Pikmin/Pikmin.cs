@@ -19,6 +19,13 @@ public class Pikmin : MonoBehaviour
     public Transform Model;
     private Coroutine UpdateTarget = default;
     private PikminState state = PikminState.Idle;
+    public Interactable Objective;
+    public PikminEvent OnStartFollow;
+    public PikminEvent OnStartThrow;
+    public PikminEvent OnEndThrow;
+    public PikminEvent OnStartCarry;
+    public PikminEvent OnEndCarry;
+    public float JumpMultiplier = 1;
 
     public PikminState State
     {
@@ -52,14 +59,6 @@ public class Pikmin : MonoBehaviour
             }
         }
     }
-
-    public Interactable Objective;
-    public PikminEvent OnStartFollow;
-    public PikminEvent OnStartThrow;
-    public PikminEvent OnEndThrow;
-    public PikminEvent OnStartCarry;
-    public PikminEvent OnEndCarry;
-    public float JumpMultiplier = 1;
 
     private void Awake()
     {
@@ -119,6 +118,54 @@ public class Pikmin : MonoBehaviour
 
         return false;
     }
+    public void SetCarrying(Transform transform)
+    {
+        SetToTransform(transform);
+        State = PikminState.Carrying;
+    }
+    private bool _isSetToPhysics = false;
+    public void SetToPhysics()
+    {
+        if (!_isSetToPhysics)
+        {
+            _isSetToPhysics = true;
+            _isSetToAgent = false;
+            _isSetToTransform = false;
+            agent.enabled = false;
+            rigidBody.isKinematic = false;
+            rigidBody.useGravity = true;
+            rigidBody.transform.parent = null;
+            rigidBody.WakeUp();
+        }
+    }
+    private bool _isSetToAgent = false;
+    public void SetToAgent()
+    {
+        if (!_isSetToAgent)
+        {
+            _isSetToPhysics = false;
+            _isSetToAgent = true;
+            _isSetToTransform = false;
+            agent.enabled = true;
+            rigidBody.isKinematic = true;
+            rigidBody.useGravity = true;
+            rigidBody.transform.parent = null;
+        }
+    }
+    private bool _isSetToTransform = false;
+    public void SetToTransform(Transform transform)
+    {
+        if (!_isSetToAgent)
+        {
+            _isSetToPhysics = false;
+            _isSetToAgent = false;
+            _isSetToTransform = true;
+            transform.parent = transform;
+            rigidBody.isKinematic = true;
+            rigidBody.useGravity = false;
+            agent.enabled = false;
+        }
+    }
 
     public virtual void FixedUpdate()
     {
@@ -133,15 +180,17 @@ public class Pikmin : MonoBehaviour
                 State = PikminState.Idle;
                 OnEndThrow.Invoke(0);
             }
-            agent.enabled = true;
-            rigidBody.isKinematic = true;
+            if (State != PikminState.Carrying)
+            {
+                SetToAgent();
+            }
         }
         else
         {
-            agent.enabled = false;
-            rigidBody.isKinematic = false;
-            rigidBody.useGravity = true;
-            rigidBody.WakeUp();
+            if (State != PikminState.Carrying)
+            {
+                SetToPhysics();
+            }
         }
     }
 
@@ -149,10 +198,9 @@ public class Pikmin : MonoBehaviour
     {
         if (Objective != null)
         {
-            transform.parent = null;
-            agent.enabled = true;
             Objective.ReleasePikmin(this);
             Objective = null;
+            SetIdle();
         }
         State = PikminState.Follow;
         OnStartFollow.Invoke(0);
@@ -170,17 +218,13 @@ public class Pikmin : MonoBehaviour
             }
         }
     }
-
     public void Throw(Vector3 target, float time, float delay)
     {
         OnStartThrow.Invoke(0);
         State = PikminState.InAir;
         if (UpdateTarget != null)
             StopCoroutine(UpdateTarget);
-        agent.enabled = false;
-        rigidBody.isKinematic = false;
-        rigidBody.useGravity = true;
-        rigidBody.WakeUp();
+        SetToPhysics();
         Vector3 gravity = Physics.gravity;
         Vector3 PosDif = target - transform.position;
         //float TimeInAir = .5f * JumpMultiplier;
@@ -188,7 +232,7 @@ public class Pikmin : MonoBehaviour
         //rigidBody.velocity += Velocity;
         transform.DOJump(target, 2, 1, time).SetDelay(delay).SetEase(Ease.Linear).OnComplete(() =>
         {
-            State = PikminState.Idle;
+            SetIdle();
             OnEndThrow.Invoke(0);
         });
         transform.LookAt(new Vector3(target.x, transform.position.y, target.z));
@@ -205,11 +249,15 @@ public class Pikmin : MonoBehaviour
 
     public void SetIdle()
     {
-        Objective = null;
-        agent.enabled = true;
-        transform.parent = null;
+        if (agent.isOnNavMesh || agent.isOnOffMeshLink || IsPikminOnNavMesh())
+        {
+            SetToAgent();
+        }
+        else
+        {
+            SetToPhysics();
+        }
         State = PikminState.Idle;
-        OnEndThrow.Invoke(0);
     }
 
     private void CheckInteraction()

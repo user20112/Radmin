@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
+using static UnityEngine.Rendering.DebugUI;
 
 public abstract class CarryAble : Interactable
 {
@@ -46,16 +47,17 @@ public abstract class CarryAble : Interactable
         }
     }
 
-    private float OriginalAgentSpeed;
-    private DestinationScript Destination;
-    private Coroutine CarryRoutine;
-    private Color CaptureColor;
-    private GameObject FractionObject;
+    private float _originalAgentSpeed;
+    private DestinationScript _destination;
+    private Coroutine _carryRoutine;
+    private Color _captureColor;
+    private GameObject _fractionObject;
     public List<Pikmin> PikminAssigned = new List<Pikmin>();
-    private int pikminCarryingCount = 0;
-    private bool Carrying = false;
+    private int _pikminCarryingCount = 0;
+    private bool _carrying = false;
     public float radius;
     public Vector3 uiOffset;
+    private Vector3 _lastPosition;
 
     private Transform canvas;
 
@@ -73,39 +75,39 @@ public abstract class CarryAble : Interactable
     {
         get
         {
-            return pikminCarryingCount;
+            return _pikminCarryingCount;
         }
         set
         {
-            pikminCarryingCount = value;
+            _pikminCarryingCount = value;
             var dest = GetUpdatedDestination();
-            bool ChangeFractionObject = Destination == null || FractionObject == null || dest == null || dest.DestinationType != Destination.DestinationType;
-            Destination = dest;
+            bool ChangeFractionObject = _destination == null || _fractionObject == null || dest == null || dest.DestinationType != _destination.DestinationType;
+            _destination = dest;
             if (ChangeFractionObject)
             {
-                if (FractionObject != null)
+                if (_fractionObject != null)
                 {
-                    DestroyImmediate(FractionObject);
-                    FractionObject = null;
+                    DestroyImmediate(_fractionObject);
+                    _fractionObject = null;
                 }
-                if (Destination != null)
+                if (_destination != null)
                 {
-                    FractionObject = PrefabRetrieverScript.GetPrefabFromDestinationType(Destination.DestinationType);
-                    FractionObject = Instantiate(FractionObject, Canvas);
-                    FractionObject.SetActive(true);
+                    _fractionObject = PrefabRetrieverScript.GetPrefabFromDestinationType(_destination.DestinationType);
+                    _fractionObject = Instantiate(_fractionObject, Canvas);
+                    _fractionObject.SetActive(true);
                 }
             }
-            if (FractionObject != null)
+            if (_fractionObject != null)
             {
-                FractionObject.transform.GetChild(0).DOComplete();
-                FractionObject.transform.GetChild(0).DOPunchScale(Vector3.one, .3f, 10, 1);
-                FractionObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = PikminCarryingCount.ToString();
-                FractionObject.transform.GetChild(2).GetComponent<TextMeshProUGUI>().text = PikminNeeded.ToString();
+                _fractionObject.transform.GetChild(0).DOComplete();
+                _fractionObject.transform.GetChild(0).DOPunchScale(Vector3.one, .3f, 10, 1);
+                _fractionObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = PikminCarryingCount.ToString();
+                _fractionObject.transform.GetChild(2).GetComponent<TextMeshProUGUI>().text = PikminNeeded.ToString();
             }
-            if (!Carrying && pikminCarryingCount >= PikminNeeded)
-                CarryRoutine = StartCoroutine(StartCarrying());
+            if (!_carrying && _pikminCarryingCount >= PikminNeeded)
+                _carryRoutine = StartCoroutine(StartCarrying());
             UpdateSpeed();
-            if (Carrying && pikminCarryingCount < PikminNeeded)
+            if (_carrying && _pikminCarryingCount < PikminNeeded)
                 StopCarrying();
         }
     }
@@ -126,38 +128,38 @@ public abstract class CarryAble : Interactable
 
     public virtual IEnumerator StartCarrying()
     {
-        Carrying = true;
+        _carrying = true;
         Agent.avoidancePriority = 50;
         Agent.isStopped = false;
-        Agent.SetDestination(Destination.Point());
+        Agent.SetDestination(_destination.Point());
         yield return new WaitUntil(() => Agent.IsDone());
         Agent.enabled = false;
         Collider.enabled = false;
         StopInteractions = true;
-        Destination.ItemCollected(new CollectedEventArgs() { ObjectCollected = this, PikminCarrying = PikminAssigned });
+        _destination.ItemCollected(new CollectedEventArgs() { ObjectCollected = this, PikminCarrying = PikminAssigned });
     }
 
     public virtual void StopCarrying()
     {
-        Carrying = false;
+        _carrying = false;
         Agent.avoidancePriority = 30;
         Agent.isStopped = true;
-        if (CarryRoutine != null)
-            StopCoroutine(CarryRoutine);
+        if (_carryRoutine != null)
+            StopCoroutine(_carryRoutine);
     }
 
     public override void Start()
     {
         base.Start();
         Physics.IgnoreLayerCollision(6, 9);
-        OriginalAgentSpeed = Agent.speed;
+        _originalAgentSpeed = Agent.speed;
     }
 
     public override void Update()
     {
         base.Update();
-        if (FractionObject != null)
-            FractionObject.transform.position = Camera.main.WorldToScreenPoint(transform.position + uiOffset);
+        if (_fractionObject != null)
+            _fractionObject.transform.position = Camera.main.WorldToScreenPoint(transform.position + uiOffset);
     }
 
     public override void AssignPikmin(Pikmin pikmin)
@@ -166,7 +168,7 @@ public abstract class CarryAble : Interactable
         if (PikminAssigned.Count < MaxPikminMultiplier * PikminNeeded)
         {
             PikminAssigned.Add(pikmin);
-            if (Carrying)
+            if (_carrying)
                 StopCarrying();
             StartCoroutine(PutPikminInNextAvailableSpot(pikmin));
         }
@@ -191,15 +193,20 @@ public abstract class CarryAble : Interactable
         {
             pikmin.agent.enabled = false;
             pikmin.transform.parent = transform;
+            pikmin.rigidBody.isKinematic = true;
+            pikmin.rigidBody.useGravity = false;
             pikmin.transform.DOLookAt(new Vector3(transform.position.x, pikmin.transform.position.y, transform.position.z), .2f);
             pikmin.State = PikminState.Carrying;
-            PikminCarryingCount++;
+            if (PikminAssigned.Count <= PikminCarryingCount + 1)
+            {
+                PikminCarryingCount++;
+            }
         }
     }
 
     public virtual void UpdateSpeed()
     {
-        Agent.speed = (float)(((double)PikminCarryingCount) / PikminNeeded * OriginalAgentSpeed);
+        Agent.speed = (float)(((double)PikminCarryingCount) / PikminNeeded * _originalAgentSpeed);
     }
 
     public override void ReleasePikmin()
@@ -217,10 +224,13 @@ public abstract class CarryAble : Interactable
 
     public override void ReleasePikmin(Pikmin pikmin)
     {
-        PikminAssigned.Remove(pikmin);
-        if (pikmin.State == PikminState.Carrying)
-            PikminCarryingCount--;
-        pikmin.SetIdle();
+        if (PikminAssigned.Contains(pikmin))
+        {
+            PikminAssigned.Remove(pikmin);
+            if (pikmin.State == PikminState.Carrying)
+                PikminCarryingCount--;
+            pikmin.SetIdle();
+        }
         base.ReleasePikmin(pikmin);
     }
 

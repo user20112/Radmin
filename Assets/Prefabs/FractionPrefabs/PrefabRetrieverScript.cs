@@ -10,7 +10,10 @@ public class PrefabRetrieverScript : MonoBehaviour
     public GameObject ShipFractionPrefab;
     public static PrefabRetrieverScript Instance;
     public Transform CanvasToDrawOn;
-
+    public PrefabRetrieverScript()
+    {
+        Instance = this;
+    }
     private void Start()
     {
         Instance = this;
