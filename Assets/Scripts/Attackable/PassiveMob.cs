@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PassiveMob : MonoBehaviour
+public class PassiveMob : Attackable
 {
     // Start is called before the first frame update
     void Start()
