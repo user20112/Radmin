@@ -167,13 +167,17 @@ public abstract class CarryAble : Interactable
         base.Update();
         if (RadminAssigned.Count < MaxRadminMultiplier * RadminNeeded)
         {
+            if (RadminAssigned.Contains(radmin))
+                return;
             RadminAssigned.Add(radmin);
+            radmin.State = RadminState.MovingIntoPosition;
             if (_carrying)
                 StopCarrying();
             StartCoroutine(PutRadminInNextAvailableSpot(radmin));
         }
         else
         {
+            radmin.SetIdle();
         }
     }
 
@@ -186,7 +190,6 @@ public abstract class CarryAble : Interactable
 
     private IEnumerator PutRadminInNextAvailableSpot(Radmin radmin)
     {
-        radmin.State = RadminState.MovingIntoPosition;
         radmin.agent.SetDestination(GetNextAvailableSpot());
         yield return new WaitUntil(() => radmin.agent.IsDone());
         if (radmin.State == RadminState.MovingIntoPosition)

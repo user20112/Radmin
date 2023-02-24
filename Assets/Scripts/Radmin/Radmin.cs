@@ -155,7 +155,7 @@ public class Radmin : MonoBehaviour
     private bool _isSetToTransform = false;
     public void SetToTransform(Transform transform)
     {
-        if (!_isSetToAgent)
+        if (!_isSetToTransform)
         {
             _isSetToPhysics = false;
             _isSetToAgent = false;
@@ -175,11 +175,11 @@ public class Radmin : MonoBehaviour
         }
         if (agent.isOnNavMesh || agent.isOnOffMeshLink || IsRadminOnNavMesh())
         {
-            if (State == RadminState.InAir)
-            {
-                State = RadminState.Idle;
-                OnEndThrow.Invoke(0);
-            }
+            //if (State == RadminState.InAir)
+            //{
+            //    State = RadminState.Idle;
+            //    OnEndThrow.Invoke(0);
+            //}
             if (State != RadminState.Carrying)
             {
                 SetToAgent();
@@ -249,6 +249,7 @@ public class Radmin : MonoBehaviour
 
     public void SetIdle()
     {
+        rigidBody.transform.parent = null;
         if (agent.isOnNavMesh || agent.isOnOffMeshLink || IsRadminOnNavMesh())
         {
             SetToAgent();
