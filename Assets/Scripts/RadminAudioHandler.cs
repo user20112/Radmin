@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 
-public class PikminAudioHandler : MonoBehaviour
+public class RadminAudioHandler : MonoBehaviour
 {
-    private Pikmin pikmin;
+    private Radmin radmin;
 
     public AudioSource generalSource;
     public AudioSource carrySource;
@@ -15,13 +15,13 @@ public class PikminAudioHandler : MonoBehaviour
 
     private void Awake()
     {
-        pikmin = GetComponent<Pikmin>();
-        pikmin.OnStartFollow.AddListener((x) => OnStartFollow(x));
-        pikmin.OnStartThrow.AddListener((x) => OnStartThrow(x));
-        pikmin.OnEndThrow.AddListener((x) => OnEndThrow(x));
+        radmin = GetComponent<Radmin>();
+        radmin.OnStartFollow.AddListener((x) => OnStartFollow(x));
+        radmin.OnStartThrow.AddListener((x) => OnStartThrow(x));
+        radmin.OnEndThrow.AddListener((x) => OnEndThrow(x));
 
-        pikmin.OnStartCarry.AddListener((x) => OnStartCarry(x));
-        pikmin.OnEndCarry.AddListener((x) => OnEndCarry(x));
+        radmin.OnStartCarry.AddListener((x) => OnStartCarry(x));
+        radmin.OnEndCarry.AddListener((x) => OnEndCarry(x));
     }
 
     public void OnStartFollow(int num)
@@ -38,7 +38,7 @@ public class PikminAudioHandler : MonoBehaviour
 
     public void OnEndThrow(int num)
     {
-        if(pikmin.Objective != null)
+        if(radmin.Objective != null)
             generalSource.PlayOneShot(grabSound);
     }
 

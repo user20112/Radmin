@@ -12,7 +12,7 @@ public class DestinationScript : MonoBehaviour
 
     public Color captureColor;
 
-    public PikminDestinationEnum DestinationType;
+    public RadminDestinationEnum DestinationType;
 
     public Vector3 capturePointOffset;
 
@@ -38,7 +38,7 @@ public class DestinationScript : MonoBehaviour
         renderer = GetComponent<Renderer>();
     }
 
-    public static DestinationScript GetDestinationFromType(PikminDestinationEnum type)
+    public static DestinationScript GetDestinationFromType(RadminDestinationEnum type)
     {
         DestinationScript[] Destinations = FindObjectsOfType(typeof(DestinationScript)) as DestinationScript[];
         foreach (DestinationScript Destination in Destinations)
@@ -47,7 +47,7 @@ public class DestinationScript : MonoBehaviour
         return null;
     }
 
-    public static DestinationScript GetPrefabFromDestinationType(PikminDestinationEnum type)
+    public static DestinationScript GetPrefabFromDestinationType(RadminDestinationEnum type)
     {
         DestinationScript[] Destinations = FindObjectsOfType(typeof(DestinationScript)) as DestinationScript[];
         foreach (DestinationScript Destination in Destinations)

@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 
-public class PlayerPikminInteraction : MonoBehaviour
+public class PlayerRadminInteraction : MonoBehaviour
 {
 
-    private PikminManager pikminManager;
+    private RadminManager radminManager;
     private Animator anim;
 
     void Start()
     {
-        pikminManager = FindObjectOfType<PikminManager>();
-        pikminManager.pikminThrow.AddListener((x) => Throw(x));
-        //pikminManager.pikminHold.AddListener((x) => Hold(x));
+        radminManager = FindObjectOfType<RadminManager>();
+        radminManager.radminThrow.AddListener((x) => Throw(x));
+        //radminManager.radminHold.AddListener((x) => Hold(x));
 
         anim = GetComponent<Animator>();
     }

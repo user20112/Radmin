@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public static class PikminUtility
+public static class RadminUtility
 {
     public static bool IsDone(this NavMeshAgent agent)
     {

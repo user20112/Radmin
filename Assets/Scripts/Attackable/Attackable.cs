@@ -20,19 +20,19 @@ public class Attackable : Interactable
         base.FixedUpdate();
     }
 
-    public override void AssignPikmin(Pikmin pikmin)
+    public override void AssignRadmin(Radmin radmin)
     {
-        base.AssignPikmin(pikmin);
+        base.AssignRadmin(radmin);
     }
 
-    public override void ReleasePikmin()
+    public override void ReleaseRadmin()
     {
-        base.ReleasePikmin();
+        base.ReleaseRadmin();
     }
 
-    public override void ReleasePikmin(Pikmin pikmin)
+    public override void ReleaseRadmin(Radmin radmin)
     {
-        base.ReleasePikmin(pikmin);
+        base.ReleaseRadmin(radmin);
     }
 
     public override bool IsInteractable()

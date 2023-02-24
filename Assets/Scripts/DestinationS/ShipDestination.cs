@@ -7,7 +7,7 @@ public class ShipDestination : DestinationScript
     public override void ItemCollected(CollectedEventArgs Args)
     {
         CarryAble Retrieved = Args.ObjectCollected as CarryAble;
-        Retrieved.ReleasePikmin();
+        Retrieved.ReleaseRadmin();
         base.ItemCollected(Args);
     }
 }

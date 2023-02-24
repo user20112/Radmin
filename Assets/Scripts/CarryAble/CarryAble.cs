@@ -9,8 +9,8 @@ using static UnityEngine.Rendering.DebugUI;
 
 public abstract class CarryAble : Interactable
 {
-    public int PikminNeeded;
-    public int MaxPikminMultiplier;
+    public int RadminNeeded;
+    public int MaxRadminMultiplier;
     private NavMeshAgent agent;
 
     private NavMeshAgent Agent
@@ -52,8 +52,8 @@ public abstract class CarryAble : Interactable
     private Coroutine _carryRoutine;
     private Color _captureColor;
     private GameObject _fractionObject;
-    public List<Pikmin> PikminAssigned = new List<Pikmin>();
-    private int _pikminCarryingCount = 0;
+    public List<Radmin> RadminAssigned = new List<Radmin>();
+    private int _radminCarryingCount = 0;
     private bool _carrying = false;
     public float radius;
     public Vector3 uiOffset;
@@ -71,15 +71,15 @@ public abstract class CarryAble : Interactable
         }
     }
 
-    public int PikminCarryingCount
+    public int RadminCarryingCount
     {
         get
         {
-            return _pikminCarryingCount;
+            return _radminCarryingCount;
         }
         set
         {
-            _pikminCarryingCount = value;
+            _radminCarryingCount = value;
             var dest = GetUpdatedDestination();
             bool ChangeFractionObject = _destination == null || _fractionObject == null || dest == null || dest.DestinationType != _destination.DestinationType;
             _destination = dest;
@@ -101,13 +101,13 @@ public abstract class CarryAble : Interactable
             {
                 _fractionObject.transform.GetChild(0).DOComplete();
                 _fractionObject.transform.GetChild(0).DOPunchScale(Vector3.one, .3f, 10, 1);
-                _fractionObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = PikminCarryingCount.ToString();
-                _fractionObject.transform.GetChild(2).GetComponent<TextMeshProUGUI>().text = PikminNeeded.ToString();
+                _fractionObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = RadminCarryingCount.ToString();
+                _fractionObject.transform.GetChild(2).GetComponent<TextMeshProUGUI>().text = RadminNeeded.ToString();
             }
-            if (!_carrying && _pikminCarryingCount >= PikminNeeded)
+            if (!_carrying && _radminCarryingCount >= RadminNeeded)
                 _carryRoutine = StartCoroutine(StartCarrying());
             UpdateSpeed();
-            if (_carrying && _pikminCarryingCount < PikminNeeded)
+            if (_carrying && _radminCarryingCount < RadminNeeded)
                 StopCarrying();
         }
     }
@@ -121,7 +121,7 @@ public abstract class CarryAble : Interactable
 
     public override bool IsInteractable()
     {
-        if (PikminAssigned.Count >= PikminNeeded * MaxPikminMultiplier && StopInteractions)
+        if (RadminAssigned.Count >= RadminNeeded * MaxRadminMultiplier && StopInteractions)
             return false;
         return base.IsInteractable();
     }
@@ -136,7 +136,7 @@ public abstract class CarryAble : Interactable
         Agent.enabled = false;
         Collider.enabled = false;
         StopInteractions = true;
-        _destination.ItemCollected(new CollectedEventArgs() { ObjectCollected = this, PikminCarrying = PikminAssigned });
+        _destination.ItemCollected(new CollectedEventArgs() { ObjectCollected = this, RadminCarrying = RadminAssigned });
     }
 
     public virtual void StopCarrying()
@@ -162,15 +162,15 @@ public abstract class CarryAble : Interactable
             _fractionObject.transform.position = Camera.main.WorldToScreenPoint(transform.position + uiOffset);
     }
 
-    public override void AssignPikmin(Pikmin pikmin)
+    public override void AssignRadmin(Radmin radmin)
     {
         base.Update();
-        if (PikminAssigned.Count < MaxPikminMultiplier * PikminNeeded)
+        if (RadminAssigned.Count < MaxRadminMultiplier * RadminNeeded)
         {
-            PikminAssigned.Add(pikmin);
+            RadminAssigned.Add(radmin);
             if (_carrying)
                 StopCarrying();
-            StartCoroutine(PutPikminInNextAvailableSpot(pikmin));
+            StartCoroutine(PutRadminInNextAvailableSpot(radmin));
         }
         else
         {
@@ -179,59 +179,59 @@ public abstract class CarryAble : Interactable
 
     public Vector3 GetNextAvailableSpot()
     {
-        int index = (int)(PikminAssigned.Count * 2 - PikminAssigned.Count / (PikminNeeded + 1));
-        float angle = (float)(index * Mathf.PI * 2f / (PikminNeeded * MaxPikminMultiplier));
+        int index = (int)(RadminAssigned.Count * 2 - RadminAssigned.Count / (RadminNeeded + 1));
+        float angle = (float)(index * Mathf.PI * 2f / (RadminNeeded * MaxRadminMultiplier));
         return transform.position + new Vector3(Mathf.Cos(angle) * radius, 0, Mathf.Sin(angle) * radius);
     }
 
-    private IEnumerator PutPikminInNextAvailableSpot(Pikmin pikmin)
+    private IEnumerator PutRadminInNextAvailableSpot(Radmin radmin)
     {
-        pikmin.State = PikminState.MovingIntoPosition;
-        pikmin.agent.SetDestination(GetNextAvailableSpot());
-        yield return new WaitUntil(() => pikmin.agent.IsDone());
-        if (pikmin.State == PikminState.MovingIntoPosition)
+        radmin.State = RadminState.MovingIntoPosition;
+        radmin.agent.SetDestination(GetNextAvailableSpot());
+        yield return new WaitUntil(() => radmin.agent.IsDone());
+        if (radmin.State == RadminState.MovingIntoPosition)
         {
-            pikmin.agent.enabled = false;
-            pikmin.transform.parent = transform;
-            pikmin.rigidBody.isKinematic = true;
-            pikmin.rigidBody.useGravity = false;
-            pikmin.transform.DOLookAt(new Vector3(transform.position.x, pikmin.transform.position.y, transform.position.z), .2f);
-            pikmin.State = PikminState.Carrying;
-            if (PikminAssigned.Count <= PikminCarryingCount + 1)
+            radmin.agent.enabled = false;
+            radmin.transform.parent = transform;
+            radmin.rigidBody.isKinematic = true;
+            radmin.rigidBody.useGravity = false;
+            radmin.transform.DOLookAt(new Vector3(transform.position.x, radmin.transform.position.y, transform.position.z), .2f);
+            radmin.State = RadminState.Carrying;
+            if (RadminAssigned.Count <= RadminCarryingCount + 1)
             {
-                PikminCarryingCount++;
+                RadminCarryingCount++;
             }
         }
     }
 
     public virtual void UpdateSpeed()
     {
-        Agent.speed = (float)(((double)PikminCarryingCount) / PikminNeeded * _originalAgentSpeed);
+        Agent.speed = (float)(((double)RadminCarryingCount) / RadminNeeded * _originalAgentSpeed);
     }
 
-    public override void ReleasePikmin()
+    public override void ReleaseRadmin()
     {
-        while (PikminAssigned.Count > 0)
+        while (RadminAssigned.Count > 0)
         {
-            Pikmin pikmin = PikminAssigned[0];
-            PikminAssigned.Remove(pikmin);
-            if (pikmin.State == PikminState.Carrying)
-                PikminCarryingCount--;
-            pikmin.SetIdle();
+            Radmin radmin = RadminAssigned[0];
+            RadminAssigned.Remove(radmin);
+            if (radmin.State == RadminState.Carrying)
+                RadminCarryingCount--;
+            radmin.SetIdle();
         }
-        base.ReleasePikmin();
+        base.ReleaseRadmin();
     }
 
-    public override void ReleasePikmin(Pikmin pikmin)
+    public override void ReleaseRadmin(Radmin radmin)
     {
-        if (PikminAssigned.Contains(pikmin))
+        if (RadminAssigned.Contains(radmin))
         {
-            PikminAssigned.Remove(pikmin);
-            if (pikmin.State == PikminState.Carrying)
-                PikminCarryingCount--;
-            pikmin.SetIdle();
+            RadminAssigned.Remove(radmin);
+            if (radmin.State == RadminState.Carrying)
+                RadminCarryingCount--;
+            radmin.SetIdle();
         }
-        base.ReleasePikmin(pikmin);
+        base.ReleaseRadmin(radmin);
     }
 
     public override void Initialize()

@@ -5,18 +5,18 @@ using DG.Tweening;
 public class InterfaceManager : MonoBehaviour
 {
 
-    public PikminManager pikminManager;
-    public TextMeshProUGUI pikminCountText;
+    public RadminManager radminManager;
+    public TextMeshProUGUI radminCountText;
 
     void Start()
     {
-        pikminManager.pikminFollow.AddListener((x) => UpdatePikminNumber(x));
+        radminManager.radminFollow.AddListener((x) => UpdateRadminNumber(x));
     }
 
-    void UpdatePikminNumber(int num)
+    void UpdateRadminNumber(int num)
     {
-        pikminCountText.transform.DOComplete();
-        pikminCountText.transform.DOPunchScale(Vector3.one/3, .3f, 10, 1);
-        pikminCountText.text = num.ToString();
+        radminCountText.transform.DOComplete();
+        radminCountText.transform.DOPunchScale(Vector3.one/3, .3f, 10, 1);
+        radminCountText.text = num.ToString();
     }
 }

@@ -1,4 +1,4 @@
-public class RedPikmin : Pikmin
+public class RedRadmin : Radmin
 {
     public override void Start()
     {

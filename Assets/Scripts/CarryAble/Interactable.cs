@@ -14,15 +14,15 @@ public abstract class Interactable : MonoBehaviour
     {
     }
 
-    public virtual void AssignPikmin(Pikmin pikmin)
+    public virtual void AssignRadmin(Radmin radmin)
     {
     }
 
-    public virtual void ReleasePikmin()
+    public virtual void ReleaseRadmin()
     {
     }
 
-    public virtual void ReleasePikmin(Pikmin pikmin)
+    public virtual void ReleaseRadmin(Radmin radmin)
     {
     }
 

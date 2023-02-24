@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class PikminController : MonoBehaviour
+public class RadminController : MonoBehaviour
 {
     [HideInInspector] public Vector3 hitPoint = Vector3.zero;
     [SerializeField] private Transform follow = default;

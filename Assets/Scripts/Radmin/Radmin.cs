@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [SelectionBase]
-public class Pikmin : MonoBehaviour
+public class Radmin : MonoBehaviour
 {
     [HideInInspector]
     public NavMeshAgent agent = default;
@@ -18,16 +18,16 @@ public class Pikmin : MonoBehaviour
     public ParticleSystem ActivationParticle;
     public Transform Model;
     private Coroutine UpdateTarget = default;
-    private PikminState state = PikminState.Idle;
+    private RadminState state = RadminState.Idle;
     public Interactable Objective;
-    public PikminEvent OnStartFollow;
-    public PikminEvent OnStartThrow;
-    public PikminEvent OnEndThrow;
-    public PikminEvent OnStartCarry;
-    public PikminEvent OnEndCarry;
+    public RadminEvent OnStartFollow;
+    public RadminEvent OnStartThrow;
+    public RadminEvent OnEndThrow;
+    public RadminEvent OnStartCarry;
+    public RadminEvent OnEndCarry;
     public float JumpMultiplier = 1;
 
-    public PikminState State
+    public RadminState State
     {
         get
         {
@@ -38,21 +38,21 @@ public class Pikmin : MonoBehaviour
             state = value;
             switch (value)
             {
-                case PikminState.Idle:
+                case RadminState.Idle:
                     LeafParticle.Play();
                     break;
 
-                case PikminState.Follow:
+                case RadminState.Follow:
                     ActivationParticle.Play();
                     LeafParticle.Clear();
                     LeafParticle.Stop();
                     break;
 
-                case PikminState.Carrying:
-                case PikminState.Attacking:
-                case PikminState.MovingIntoPosition:
-                case PikminState.MoveStickFollow:
-                case PikminState.InAir:
+                case RadminState.Carrying:
+                case RadminState.Attacking:
+                case RadminState.MovingIntoPosition:
+                case RadminState.MoveStickFollow:
+                case RadminState.InAir:
                     LeafParticle.Clear();
                     LeafParticle.Stop();
                     break;
@@ -100,7 +100,7 @@ public class Pikmin : MonoBehaviour
 
     private float onMeshThreshold = .1f;
 
-    public bool IsPikminOnNavMesh()
+    public bool IsRadminOnNavMesh()
     {
         Vector3 agentPosition = agent.transform.position;
         NavMeshHit hit;
@@ -121,7 +121,7 @@ public class Pikmin : MonoBehaviour
     public void SetCarrying(Transform transform)
     {
         SetToTransform(transform);
-        State = PikminState.Carrying;
+        State = RadminState.Carrying;
     }
     private bool _isSetToPhysics = false;
     public void SetToPhysics()
@@ -169,25 +169,25 @@ public class Pikmin : MonoBehaviour
 
     public virtual void FixedUpdate()
     {
-        if (State == PikminState.Idle)
+        if (State == RadminState.Idle)
         {
             CheckInteraction();
         }
-        if (agent.isOnNavMesh || agent.isOnOffMeshLink || IsPikminOnNavMesh())
+        if (agent.isOnNavMesh || agent.isOnOffMeshLink || IsRadminOnNavMesh())
         {
-            if (State == PikminState.InAir)
+            if (State == RadminState.InAir)
             {
-                State = PikminState.Idle;
+                State = RadminState.Idle;
                 OnEndThrow.Invoke(0);
             }
-            if (State != PikminState.Carrying)
+            if (State != RadminState.Carrying)
             {
                 SetToAgent();
             }
         }
         else
         {
-            if (State != PikminState.Carrying)
+            if (State != RadminState.Carrying)
             {
                 SetToPhysics();
             }
@@ -198,11 +198,11 @@ public class Pikmin : MonoBehaviour
     {
         if (Objective != null)
         {
-            Objective.ReleasePikmin(this);
+            Objective.ReleaseRadmin(this);
             Objective = null;
             SetIdle();
         }
-        State = PikminState.Follow;
+        State = RadminState.Follow;
         OnStartFollow.Invoke(0);
         if (this.UpdateTarget != null)
             StopCoroutine(this.UpdateTarget);
@@ -221,7 +221,7 @@ public class Pikmin : MonoBehaviour
     public void Throw(Vector3 target, float time, float delay)
     {
         OnStartThrow.Invoke(0);
-        State = PikminState.InAir;
+        State = RadminState.InAir;
         if (UpdateTarget != null)
             StopCoroutine(UpdateTarget);
         SetToPhysics();
@@ -249,7 +249,7 @@ public class Pikmin : MonoBehaviour
 
     public void SetIdle()
     {
-        if (agent.isOnNavMesh || agent.isOnOffMeshLink || IsPikminOnNavMesh())
+        if (agent.isOnNavMesh || agent.isOnOffMeshLink || IsRadminOnNavMesh())
         {
             SetToAgent();
         }
@@ -257,7 +257,7 @@ public class Pikmin : MonoBehaviour
         {
             SetToPhysics();
         }
-        State = PikminState.Idle;
+        State = RadminState.Idle;
     }
 
     private void CheckInteraction()
@@ -275,7 +275,7 @@ public class Pikmin : MonoBehaviour
             if (InteractableObject != null && InteractableObject.IsInteractable())
             {
                 Objective = InteractableObject;
-                Objective.AssignPikmin(this);
+                Objective.AssignRadmin(this);
                 break;
             }
         }

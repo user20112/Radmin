@@ -1,4 +1,4 @@
-public enum PikminDestinationEnum
+public enum RadminDestinationEnum
 {
     Red,
     Blue,

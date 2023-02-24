@@ -3,5 +3,5 @@
 public class CollectedEventArgs
 {
     public CarryAble ObjectCollected;
-    public List<Pikmin> PikminCarrying;
+    public List<Radmin> RadminCarrying;
 }

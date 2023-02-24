@@ -1,4 +1,4 @@
-public enum PikminType
+public enum RadminType
 {
     Red,
     Blue,

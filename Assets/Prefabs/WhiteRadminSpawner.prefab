@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8191961434578679350}
   - component: {fileID: 8191961434578679349}
   m_Layer: 0
-  m_Name: WhitePikminSpawner
+  m_Name: WhiteRadminSpawner
   m_TagString: Untagged
   m_Icon: {fileID: 4422084297763085224, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0

@@ -12,9 +12,9 @@ public class ShipCarryAble : CarryAble
         base.Update();
     }
 
-    public override void ReleasePikmin(Pikmin pikmin)
+    public override void ReleaseRadmin(Radmin radmin)
     {
-        base.ReleasePikmin(pikmin);
+        base.ReleaseRadmin(radmin);
     }
 
     public override void Initialize()

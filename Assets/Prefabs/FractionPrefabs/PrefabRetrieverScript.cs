@@ -19,26 +19,26 @@ public class PrefabRetrieverScript : MonoBehaviour
         Instance = this;
     }
 
-    public static GameObject GetPrefabFromDestinationType(PikminDestinationEnum Type)
+    public static GameObject GetPrefabFromDestinationType(RadminDestinationEnum Type)
     {
         switch (Type)
         {
-            case PikminDestinationEnum.Red:
+            case RadminDestinationEnum.Red:
                 return Instance.RedFractionPrefab;
 
-            case PikminDestinationEnum.Blue:
+            case RadminDestinationEnum.Blue:
                 return Instance.BlueFractionPrefab;
 
-            case PikminDestinationEnum.Yellow:
+            case RadminDestinationEnum.Yellow:
                 return Instance.YellowFractionPrefab;
 
-            case PikminDestinationEnum.White:
+            case RadminDestinationEnum.White:
                 return Instance.WhiteFractionPrefab;
 
-            case PikminDestinationEnum.Purple:
+            case RadminDestinationEnum.Purple:
                 return Instance.PurpleFractionPrefab;
 
-            case PikminDestinationEnum.Ship:
+            case RadminDestinationEnum.Ship:
                 return Instance.ShipFractionPrefab;
         }
         return Instance.ShipFractionPrefab;

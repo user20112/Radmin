@@ -1,4 +1,4 @@
-public class YellowPikmin : Pikmin
+public class WhiteRadmin : Radmin
 {
     public override void Start()
     {

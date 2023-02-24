@@ -4,11 +4,11 @@ using UnityEngine;
 using UnityEngine.Animations.Rigging;
 using UnityEngine.Events;
 
-[System.Serializable] public class PikminEvent : UnityEvent<int> { }
+[System.Serializable] public class RadminEvent : UnityEvent<int> { }
 
 [System.Serializable] public class PlayerEvent : UnityEvent<Vector3> { }
 
-public class PikminManager : MonoBehaviour
+public class RadminManager : MonoBehaviour
 {
     [SerializeField] private Vector3 followOffset;
 
@@ -24,21 +24,21 @@ public class PikminManager : MonoBehaviour
     [Header("Visual")]
     public Transform visualCylinder;
 
-    public static PikminManager Instance
+    public static RadminManager Instance
     {
         get
         {
             if (_Instance == null)
-                _Instance = new PikminManager();
+                _Instance = new RadminManager();
             return _Instance;
         }
     }
 
-    private static PikminManager _Instance;
+    private static RadminManager _Instance;
     private MovementInput charMovement;
 
     [Header("Positioning")]
-    public Transform pikminThrowPosition;
+    public Transform radminThrowPosition;
 
     [Header("Targeting")]
     [SerializeField] private Transform target = default;
@@ -48,17 +48,17 @@ public class PikminManager : MonoBehaviour
     [SerializeField] private float selectionRadius = 1;
 
     [Header("Events")]
-    public PikminEvent pikminFollow;
+    public RadminEvent radminFollow;
 
-    //public PlayerEvent pikminHold;
-    public PlayerEvent pikminThrow;
+    //public PlayerEvent radminHold;
+    public PlayerEvent radminThrow;
 
-    public List<Pikmin> AllPikmin = new List<Pikmin>();
-    private int controlledPikmin = 0;
+    public List<Radmin> AllRadmin = new List<Radmin>();
+    private int controlledRadmin = 0;
     public Rig whistleRig;
     public ParticleSystem whistlePlayerParticle;
 
-    public PikminManager()
+    public RadminManager()
     {
         _Instance = this;
     }
@@ -69,10 +69,10 @@ public class PikminManager : MonoBehaviour
         line = GetComponentInChildren<LineRenderer>();
         line.positionCount = linePoints;
         charMovement = FindObjectOfType<MovementInput>();
-        PikminSpawner[] spawners = FindObjectsOfType(typeof(PikminSpawner)) as PikminSpawner[];
-        foreach (PikminSpawner spawner in spawners)
+        RadminSpawner[] spawners = FindObjectsOfType(typeof(RadminSpawner)) as RadminSpawner[];
+        foreach (RadminSpawner spawner in spawners)
         {
-            spawner.SpawnStartPikmin(ref AllPikmin);
+            spawner.SpawnStartRadmin(ref AllRadmin);
         }
     }
 
@@ -124,32 +124,32 @@ public class PikminManager : MonoBehaviour
         visualCylinder.transform.position = MouseIcon.position;
         if (Input.GetMouseButton(1))
         {
-            foreach (Pikmin pikmin in AllPikmin)
+            foreach (Radmin radmin in AllRadmin)
             {
-                if (Vector3.Distance(pikmin.transform.position, MouseIcon.position) < selectionRadius)
+                if (Vector3.Distance(radmin.transform.position, MouseIcon.position) < selectionRadius)
                 {
-                    if (pikmin.State != PikminState.Follow && pikmin.State != PikminState.InAir && pikmin.State != PikminState.MoveStickFollow)
+                    if (radmin.State != RadminState.Follow && radmin.State != RadminState.InAir && radmin.State != RadminState.MoveStickFollow)
                     {
-                        pikmin.SetTarget(target, 0.25f);
-                        controlledPikmin++;
-                        pikminFollow.Invoke(controlledPikmin);
+                        radmin.SetTarget(target, 0.25f);
+                        controlledRadmin++;
+                        radminFollow.Invoke(controlledRadmin);
                     }
                 }
             }
         }
         if (Input.GetMouseButtonDown(0))
         {
-            foreach (Pikmin pikmin in AllPikmin)
+            foreach (Radmin radmin in AllRadmin)
             {
-                if (pikmin.State == PikminState.Follow && Vector3.Distance(pikmin.transform.position, charMovement.transform.position) < 2)
+                if (radmin.State == RadminState.Follow && Vector3.Distance(radmin.transform.position, charMovement.transform.position) < 2)
                 {
-                    pikmin.agent.enabled = false;
+                    radmin.agent.enabled = false;
                     float delay = .05f;
-                    pikmin.transform.DOMove(pikminThrowPosition.position, delay);
-                    pikmin.Throw(MouseIcon.position, .5f, delay);
-                    controlledPikmin--;
-                    pikminThrow.Invoke(MouseIcon.position);
-                    pikminFollow.Invoke(controlledPikmin);
+                    radmin.transform.DOMove(radminThrowPosition.position, delay);
+                    radmin.Throw(MouseIcon.position, .5f, delay);
+                    controlledRadmin--;
+                    radminThrow.Invoke(MouseIcon.position);
+                    radminFollow.Invoke(controlledRadmin);
                     break;
                 }
             }

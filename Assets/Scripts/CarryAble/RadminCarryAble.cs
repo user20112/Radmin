@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public class PikminCarryAble : CarryAble
+public class RadminCarryAble : CarryAble
 {
-    public PikminType PreferredType;
+    public RadminType PreferredType;
     public int CapturePoints;
 
     public override void Start()
@@ -17,30 +17,30 @@ public class PikminCarryAble : CarryAble
 
     public override DestinationScript GetUpdatedDestination()
     {
-        if (PikminCarryingCount > 0)
+        if (RadminCarryingCount > 0)
         {
             DestinationScript[] Destinations = FindObjectsOfType<DestinationScript>();
-            int BluePikmin = 0;
-            int RedPikmin = 0;
-            int YellowPikmin = 0;
-            int WhitePikmin = 0;
-            int PurplePikmin = 0;
-            foreach (Pikmin pikmin in PikminAssigned)
+            int BlueRadmin = 0;
+            int RedRadmin = 0;
+            int YellowRadmin = 0;
+            int WhiteRadmin = 0;
+            int PurpleRadmin = 0;
+            foreach (Radmin radmin in RadminAssigned)
             {
-                if (pikmin is BluePikmin)
-                    BluePikmin++;
-                if (pikmin is RedPikmin)
-                    RedPikmin++;
-                if (pikmin is YellowPikmin)
-                    YellowPikmin++;
-                if (pikmin is WhitePikmin)
-                    WhitePikmin++;
-                if (pikmin is PurplePikmin)
-                    PurplePikmin++;
+                if (radmin is BlueRadmin)
+                    BlueRadmin++;
+                if (radmin is RedRadmin)
+                    RedRadmin++;
+                if (radmin is YellowRadmin)
+                    YellowRadmin++;
+                if (radmin is WhiteRadmin)
+                    WhiteRadmin++;
+                if (radmin is PurpleRadmin)
+                    PurpleRadmin++;
             }
-            bool BlueHighest = BluePikmin >= RedPikmin && BluePikmin >= YellowPikmin;
-            bool RedHighest = RedPikmin >= BluePikmin && RedPikmin >= YellowPikmin;
-            bool YellowHighest = YellowPikmin >= RedPikmin && YellowPikmin >= BluePikmin;
+            bool BlueHighest = BlueRadmin >= RedRadmin && BlueRadmin >= YellowRadmin;
+            bool RedHighest = RedRadmin >= BlueRadmin && RedRadmin >= YellowRadmin;
+            bool YellowHighest = YellowRadmin >= RedRadmin && YellowRadmin >= BlueRadmin;
             bool GetRandom = !BlueHighest && !YellowHighest && !RedHighest;
             if (GetRandom)
                 switch (Random.Range(0, 2))
@@ -57,13 +57,13 @@ public class PikminCarryAble : CarryAble
                         YellowHighest = true;
                         break;
                 }
-            PikminDestinationEnum TypeToReturnToo = PikminDestinationEnum.Red;
+            RadminDestinationEnum TypeToReturnToo = RadminDestinationEnum.Red;
             if (BlueHighest)
-                TypeToReturnToo = PikminDestinationEnum.Blue;
+                TypeToReturnToo = RadminDestinationEnum.Blue;
             if (RedHighest)
-                TypeToReturnToo = PikminDestinationEnum.Red;
+                TypeToReturnToo = RadminDestinationEnum.Red;
             if (YellowHighest)
-                TypeToReturnToo = PikminDestinationEnum.Yellow;
+                TypeToReturnToo = RadminDestinationEnum.Yellow;
             for (int x = 0; x < Destinations.Length; x++)
                 if (Destinations[x].DestinationType == TypeToReturnToo)
                     return Destinations[x];
@@ -73,14 +73,14 @@ public class PikminCarryAble : CarryAble
             return null;
     }
 
-    public override void ReleasePikmin(Pikmin pikmin)
+    public override void ReleaseRadmin(Radmin radmin)
     {
-        base.ReleasePikmin(pikmin);
+        base.ReleaseRadmin(radmin);
     }
 
-    public override void ReleasePikmin()
+    public override void ReleaseRadmin()
     {
-        base.ReleasePikmin();
+        base.ReleaseRadmin();
     }
 
     public override void Initialize()

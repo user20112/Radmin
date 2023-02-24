@@ -1,4 +1,4 @@
-public enum PikminState
+public enum RadminState
 {
     Idle,
     Follow,

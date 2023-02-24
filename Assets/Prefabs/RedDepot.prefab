@@ -29612,7 +29612,7 @@ GameObject:
   - component: {fileID: 6243664119763442694}
   - component: {fileID: 6513501102579065174}
   m_Layer: 0
-  m_Name: RedOnion
+  m_Name: RedDepot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
