@@ -53,7 +53,8 @@ public abstract class CarryAble : Interactable
     private Color _captureColor;
     private GameObject _fractionObject;
     public List<Radmin> RadminAssigned = new List<Radmin>();
-    private int _radminCarryingCount = 0;
+    public int _radminCarryingCount = 0;
+    private int _tempCarryingCountOffset = 0;
     private bool _carrying = false;
     public float radius;
     public Vector3 uiOffset;
@@ -79,12 +80,21 @@ public abstract class CarryAble : Interactable
         }
         set
         {
+            if (value < 0)
+            {
+                _radminCarryingCount = 0;
+                return;
+            }
             _radminCarryingCount = value;
             var dest = GetUpdatedDestination();
             bool ChangeFractionObject = _destination == null || _fractionObject == null || dest == null || dest.DestinationType != _destination.DestinationType;
             _destination = dest;
             if (ChangeFractionObject)
             {
+                if (_carrying && _destination != null)
+                {
+                    Agent.SetDestination(_destination.Point());
+                }
                 if (_fractionObject != null)
                 {
                     DestroyImmediate(_fractionObject);
@@ -164,7 +174,7 @@ public abstract class CarryAble : Interactable
 
     public override void AssignRadmin(Radmin radmin)
     {
-        base.Update();
+        base.AssignRadmin(radmin);
         if (RadminAssigned.Count < MaxRadminMultiplier * RadminNeeded)
         {
             if (RadminAssigned.Contains(radmin))
@@ -194,15 +204,22 @@ public abstract class CarryAble : Interactable
         yield return new WaitUntil(() => radmin.agent.IsDone());
         if (radmin.State == RadminState.MovingIntoPosition)
         {
+            Debug.Log("PutInNextSpotAgentChanged");
             radmin.agent.enabled = false;
             radmin.transform.parent = transform;
             radmin.rigidBody.isKinematic = true;
             radmin.rigidBody.useGravity = false;
             radmin.transform.DOLookAt(new Vector3(transform.position.x, radmin.transform.position.y, transform.position.z), .2f);
             radmin.State = RadminState.Carrying;
-            if (RadminAssigned.Count <= RadminCarryingCount + 1)
+            if (RadminAssigned.Count <= RadminCarryingCount + _tempCarryingCountOffset + 1)
             {
-                RadminCarryingCount++;
+                int temp = _tempCarryingCountOffset;
+                _tempCarryingCountOffset = 0;
+                RadminCarryingCount += temp + 1;
+            }
+            else
+            {
+                _tempCarryingCountOffset++;
             }
         }
     }
@@ -218,10 +235,9 @@ public abstract class CarryAble : Interactable
         {
             Radmin radmin = RadminAssigned[0];
             RadminAssigned.Remove(radmin);
-            if (radmin.State == RadminState.Carrying)
-                RadminCarryingCount--;
             radmin.SetIdle();
         }
+        RadminCarryingCount = 0;
         base.ReleaseRadmin();
     }
 

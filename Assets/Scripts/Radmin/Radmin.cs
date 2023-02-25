@@ -1,4 +1,5 @@
 ﻿using DG.Tweening;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -67,6 +68,11 @@ public class Radmin : MonoBehaviour
         OnStartFollow.AddListener((x) => StartFollow(x));
         OnStartThrow.AddListener((x) => StartThrow(x));
         OnEndThrow.AddListener((x) => EndThrow(x));
+        usePhysics = false;
+        agent.enabled = true;
+        rigidBody.isKinematic = true;
+        rigidBody.useGravity = false;
+        rigidBody.transform.parent = null;
     }
 
     public void StartFollow(int num)
@@ -98,9 +104,8 @@ public class Radmin : MonoBehaviour
     {
     }
 
-    private float onMeshThreshold = .1f;
-
-    public bool IsRadminOnNavMesh()
+    private float onMeshThreshold = .5f;
+    private bool TryWarpToNearestPoint()
     {
         Vector3 agentPosition = agent.transform.position;
         NavMeshHit hit;
@@ -108,14 +113,9 @@ public class Radmin : MonoBehaviour
         // Check for nearest point on navmesh to agent, within onMeshThreshold
         if (NavMesh.SamplePosition(agentPosition, out hit, onMeshThreshold, NavMesh.AllAreas))
         {
-            // Check if the positions are vertically aligned
-            if (Mathf.Approximately(agentPosition.x, hit.position.x) && Mathf.Approximately(agentPosition.z, hit.position.z))
-            {
-                // Lastly, check if object is below navmesh
-                return agentPosition.y >= hit.position.y;
-            }
+            agent.Warp(hit.position);
+            return true;
         }
-
         return false;
     }
     public void SetCarrying(Transform transform)
@@ -123,75 +123,81 @@ public class Radmin : MonoBehaviour
         SetToTransform(transform);
         State = RadminState.Carrying;
     }
-    private bool _isSetToPhysics = false;
-    public void SetToPhysics()
+    private bool usePhysics
     {
-        if (!_isSetToPhysics)
+        get
         {
-            _isSetToPhysics = true;
-            _isSetToAgent = false;
-            _isSetToTransform = false;
-            agent.enabled = false;
-            rigidBody.isKinematic = false;
-            rigidBody.useGravity = true;
-            rigidBody.transform.parent = null;
-            rigidBody.WakeUp();
+            return !rigidBody.isKinematic;
+        }
+        set
+        {
+            Debug.Log("UsePhysicsSet");
+            if (value && value != usePhysics)
+            {
+                useAgent = false;
+                agent.enabled = false;
+                rigidBody.isKinematic = false;
+                rigidBody.useGravity = true;
+                rigidBody.transform.parent = null;
+                rigidBody.WakeUp();
+            }
         }
     }
-    private bool _isSetToAgent = false;
-    public void SetToAgent()
+    private bool useAgent
     {
-        if (!_isSetToAgent)
+        get { return agent.enabled; }
+        set
         {
-            _isSetToPhysics = false;
-            _isSetToAgent = true;
-            _isSetToTransform = false;
-            agent.enabled = true;
-            rigidBody.isKinematic = true;
-            rigidBody.useGravity = true;
-            rigidBody.transform.parent = null;
+            Debug.Log("UseAgentSet");
+            if (value && value != useAgent)
+            {
+                usePhysics = false;
+                agent.enabled = true;
+                rigidBody.isKinematic = true;
+                rigidBody.useGravity = false;
+                rigidBody.transform.parent = null;
+            }
         }
     }
-    private bool _isSetToTransform = false;
+    private bool useTransform
+    {
+        get { return rigidBody.transform.parent != null; }
+    }
     public void SetToTransform(Transform transform)
     {
-        if (!_isSetToTransform)
+        useAgent = false;
+        usePhysics = false;
+        Debug.Log("SettingToTransform");
+        if (!useTransform)
         {
-            _isSetToPhysics = false;
-            _isSetToAgent = false;
-            _isSetToTransform = true;
             transform.parent = transform;
             rigidBody.isKinematic = true;
             rigidBody.useGravity = false;
             agent.enabled = false;
         }
     }
-
+    private int updateTicker = 0;
     public virtual void FixedUpdate()
     {
-        if (State == RadminState.Idle)
+        updateTicker++;
+        if (updateTicker > 100)
+            updateTicker = 0;
+        if (usePhysics)
         {
-            CheckInteraction();
-        }
-        if (agent.isOnNavMesh || agent.isOnOffMeshLink || IsRadminOnNavMesh())
-        {
-            //if (State == RadminState.InAir)
-            //{
-            //    State = RadminState.Idle;
-            //    OnEndThrow.Invoke(0);
-            //}
-            if (State != RadminState.Carrying)
+            if (TryWarpToNearestPoint())
             {
-                SetToAgent();
+                useAgent = true;
             }
         }
-        else
+        if (useAgent && !(agent.isOnNavMesh || agent.isOnOffMeshLink))
         {
-            if (State != RadminState.Carrying)
-            {
-                SetToPhysics();
-            }
+            usePhysics = true;
         }
+        if (updateTicker % 10 == 0)
+            if (State == RadminState.Idle && useAgent)
+            {
+                CheckInteraction();
+            }
     }
 
     public void SetTarget(Transform target, float updateTime = 1f)
@@ -200,20 +206,19 @@ public class Radmin : MonoBehaviour
         {
             Objective.ReleaseRadmin(this);
             Objective = null;
-            SetIdle();
         }
         State = RadminState.Follow;
         OnStartFollow.Invoke(0);
         if (this.UpdateTarget != null)
             StopCoroutine(this.UpdateTarget);
+        useAgent = true;
         WaitForSeconds wait = new WaitForSeconds(updateTime);
         this.UpdateTarget = StartCoroutine(UpdateTarget());
         IEnumerator UpdateTarget()
         {
             while (true)
             {
-                if (agent.enabled)
-                    agent.SetDestination(target.position);
+                agent.SetDestination(target.position);
                 yield return wait;
             }
         }
@@ -224,7 +229,6 @@ public class Radmin : MonoBehaviour
         State = RadminState.InAir;
         if (UpdateTarget != null)
             StopCoroutine(UpdateTarget);
-        SetToPhysics();
         Vector3 gravity = Physics.gravity;
         Vector3 PosDif = target - transform.position;
         //float TimeInAir = .5f * JumpMultiplier;
@@ -250,14 +254,7 @@ public class Radmin : MonoBehaviour
     public void SetIdle()
     {
         rigidBody.transform.parent = null;
-        if (agent.isOnNavMesh || agent.isOnOffMeshLink || IsRadminOnNavMesh())
-        {
-            SetToAgent();
-        }
-        else
-        {
-            SetToPhysics();
-        }
+        useAgent = true;
         State = RadminState.Idle;
     }
 
