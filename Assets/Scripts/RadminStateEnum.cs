@@ -5,6 +5,7 @@ public enum RadminState
     Carrying,
     Attacking,
     MovingIntoPosition,
+    MovingToAttack,
     MoveStickFollow,
     InAir
 }

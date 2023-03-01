@@ -12,7 +12,6 @@ public abstract class CarryAble : Interactable
     public int RadminNeeded;
     public int MaxRadminMultiplier;
     private NavMeshAgent agent;
-
     private NavMeshAgent Agent
     {
         get
@@ -22,9 +21,7 @@ public abstract class CarryAble : Interactable
             return agent;
         }
     }
-
     public Renderer objectRenderer;
-
     public Renderer ObjectRenderer
     {
         get
@@ -34,9 +31,7 @@ public abstract class CarryAble : Interactable
             return objectRenderer;
         }
     }
-
     private Collider collider;
-
     private Collider Collider
     {
         get
@@ -46,7 +41,6 @@ public abstract class CarryAble : Interactable
             return collider;
         }
     }
-
     private float _originalAgentSpeed;
     private DestinationScript _destination;
     private Coroutine _carryRoutine;
@@ -106,6 +100,7 @@ public abstract class CarryAble : Interactable
                     _fractionObject = Instantiate(_fractionObject, Canvas);
                     _fractionObject.SetActive(true);
                 }
+                UpdateFractionObjectLocation();
             }
             if (_fractionObject != null)
             {
@@ -131,6 +126,8 @@ public abstract class CarryAble : Interactable
 
     public override bool IsInteractable()
     {
+        if (!agent.isOnNavMesh)
+            return false;
         if (RadminAssigned.Count >= RadminNeeded * MaxRadminMultiplier && StopInteractions)
             return false;
         return base.IsInteractable();
@@ -168,10 +165,13 @@ public abstract class CarryAble : Interactable
     public override void Update()
     {
         base.Update();
+        UpdateFractionObjectLocation();
+    }
+    private void UpdateFractionObjectLocation()
+    {
         if (_fractionObject != null)
             _fractionObject.transform.position = Camera.main.WorldToScreenPoint(transform.position + uiOffset);
     }
-
     public override void AssignRadmin(Radmin radmin)
     {
         base.AssignRadmin(radmin);
@@ -204,7 +204,6 @@ public abstract class CarryAble : Interactable
         yield return new WaitUntil(() => radmin.agent.IsDone());
         if (radmin.State == RadminState.MovingIntoPosition)
         {
-            Debug.Log("PutInNextSpotAgentChanged");
             radmin.agent.enabled = false;
             radmin.transform.parent = transform;
             radmin.rigidBody.isKinematic = true;

@@ -6,13 +6,9 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [SelectionBase]
-public class Radmin : MonoBehaviour
+public class Radmin : MovableObject
 {
     [HideInInspector]
-    public NavMeshAgent agent = default;
-
-    public Rigidbody rigidBody = default;
-
     public TrailRenderer Trail;
     public ParticleSystem ParticleTrail;
     public ParticleSystem LeafParticle;
@@ -27,6 +23,9 @@ public class Radmin : MonoBehaviour
     public RadminEvent OnStartCarry;
     public RadminEvent OnEndCarry;
     public float JumpMultiplier = 1;
+    public int Damage = 1;
+    public int AttackSpeed = 300;
+    public int Ticker = 0;
 
     public RadminState State
     {
@@ -61,18 +60,12 @@ public class Radmin : MonoBehaviour
         }
     }
 
-    private void Awake()
+    public override void Awake()
     {
-        agent = GetComponent<NavMeshAgent>();
-        rigidBody = GetComponent<Rigidbody>();
+        base.Awake();
         OnStartFollow.AddListener((x) => StartFollow(x));
         OnStartThrow.AddListener((x) => StartThrow(x));
         OnEndThrow.AddListener((x) => EndThrow(x));
-        usePhysics = false;
-        agent.enabled = true;
-        rigidBody.isKinematic = true;
-        rigidBody.useGravity = false;
-        rigidBody.transform.parent = null;
     }
 
     public void StartFollow(int num)
@@ -93,107 +86,30 @@ public class Radmin : MonoBehaviour
         Trail.emitting = false;
     }
 
-    public virtual void Start()
+    public override void Start()
     {
+        base.Start();
         Physics.IgnoreLayerCollision(7, 9);
         Trail = GetComponentInChildren<TrailRenderer>();
         Trail.emitting = false;
     }
 
-    public virtual void Update()
+    public override void Update()
     {
-    }
-
-    private float onMeshThreshold = .5f;
-    private bool TryWarpToNearestPoint()
-    {
-        Vector3 agentPosition = agent.transform.position;
-        NavMeshHit hit;
-
-        // Check for nearest point on navmesh to agent, within onMeshThreshold
-        if (NavMesh.SamplePosition(agentPosition, out hit, onMeshThreshold, NavMesh.AllAreas))
-        {
-            agent.Warp(hit.position);
-            return true;
-        }
-        return false;
+        base.Update();
     }
     public void SetCarrying(Transform transform)
     {
         SetToTransform(transform);
         State = RadminState.Carrying;
     }
-    private bool usePhysics
-    {
-        get
-        {
-            return !rigidBody.isKinematic;
-        }
-        set
-        {
-            Debug.Log("UsePhysicsSet");
-            if (value && value != usePhysics)
-            {
-                useAgent = false;
-                agent.enabled = false;
-                rigidBody.isKinematic = false;
-                rigidBody.useGravity = true;
-                rigidBody.transform.parent = null;
-                rigidBody.WakeUp();
-            }
-        }
-    }
-    private bool useAgent
-    {
-        get { return agent.enabled; }
-        set
-        {
-            Debug.Log("UseAgentSet");
-            if (value && value != useAgent)
-            {
-                usePhysics = false;
-                agent.enabled = true;
-                rigidBody.isKinematic = true;
-                rigidBody.useGravity = false;
-                rigidBody.transform.parent = null;
-            }
-        }
-    }
-    private bool useTransform
-    {
-        get { return rigidBody.transform.parent != null; }
-    }
-    public void SetToTransform(Transform transform)
-    {
-        useAgent = false;
-        usePhysics = false;
-        Debug.Log("SettingToTransform");
-        if (!useTransform)
-        {
-            transform.parent = transform;
-            rigidBody.isKinematic = true;
-            rigidBody.useGravity = false;
-            agent.enabled = false;
-        }
-    }
-    private int updateTicker = 0;
     public virtual void FixedUpdate()
     {
-        updateTicker++;
-        if (updateTicker > 100)
-            updateTicker = 0;
-        if (usePhysics)
-        {
-            if (TryWarpToNearestPoint())
-            {
-                useAgent = true;
-            }
-        }
-        if (useAgent && !(agent.isOnNavMesh || agent.isOnOffMeshLink))
-        {
-            usePhysics = true;
-        }
-        if (updateTicker % 10 == 0)
+        base.FixedUpdate();
+        Ticker++;
+        if (Ticker > 10000)
+            Ticker = 0;
+        if (Ticker % 10 == 0)
             if (State == RadminState.Idle && useAgent)
             {
                 CheckInteraction();
@@ -236,7 +152,8 @@ public class Radmin : MonoBehaviour
         //rigidBody.velocity += Velocity;
         transform.DOJump(target, 2, 1, time).SetDelay(delay).SetEase(Ease.Linear).OnComplete(() =>
         {
-            SetIdle();
+            if (state == RadminState.InAir)
+                SetIdle();
             OnEndThrow.Invoke(0);
         });
         transform.LookAt(new Vector3(target.x, transform.position.y, target.z));

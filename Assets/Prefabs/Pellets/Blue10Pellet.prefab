@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3493932583299565606}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: "\u5168\u3066\u306E\u89AA"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -26,6 +26,7 @@ Transform:
   m_LocalRotation: {x: 0.7071068, y: 0, z: -0, w: 0.7071067}
   m_LocalPosition: {x: -0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1786436941951660984}
   m_Father: {fileID: 8221239053279140747}
@@ -43,7 +44,9 @@ GameObject:
   - component: {fileID: 1227750096124737342}
   - component: {fileID: 1227750096124737343}
   - component: {fileID: 1227750096124737336}
-  m_Layer: 0
+  - component: {fileID: 7772593017257387777}
+  - component: {fileID: -3293352430182814751}
+  m_Layer: 7
   m_Name: Blue10Pellet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -60,11 +63,12 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -17.363789, y: -1.000055, z: 8.7183075}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 919788520709835492}
   - {fileID: 3687339163247704186}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: 22
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!195 &1227750096124737342
 NavMeshAgent:
@@ -75,7 +79,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 1227750096124737337}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.35
+  m_Radius: 0.01
   m_Speed: 1
   m_Acceleration: 13
   avoidancePriority: 10
@@ -100,10 +104,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b08103c469208b64280372fd83f0242f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PikminNeeded: 10
-  MaxPikminMultiplier: 2
+  RadminNeeded: 10
+  MaxRadminMultiplier: 2
   objectRenderer: {fileID: 0}
-  PikminAssigned: []
+  RadminAssigned: []
+  _radminCarryingCount: 0
   radius: 1
   uiOffset: {x: 0, y: 1, z: 0}
   PreferredType: 1
@@ -116,11 +121,60 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1227750096124737337}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 0
+  m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
+  serializedVersion: 3
   m_Size: {x: 1.5, y: 0.75, z: 1.5}
   m_Center: {x: 0, y: 0.35, z: 0}
+--- !u!114 &7772593017257387777
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1227750096124737337}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 043204beacb5cff43a890ce8b3da5276, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agent: {fileID: 0}
+  rigidBody: {fileID: 0}
+--- !u!54 &-3293352430182814751
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1227750096124737337}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &2161247194621224666
 GameObject:
   m_ObjectHideFlags: 0
@@ -131,7 +185,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3687339163247704186}
   - component: {fileID: 1848683885687833190}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Pellet 10_mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -148,6 +202,7 @@ Transform:
   m_LocalRotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
   m_LocalPosition: {x: -0, y: 0, z: 0}
   m_LocalScale: {x: 100, y: 100, z: 100}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1892084249805663619}
   m_RootOrder: 1
@@ -163,6 +218,7 @@ SkinnedMeshRenderer:
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -215,7 +271,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8221239053279140747}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Pellet 10_arm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -232,6 +288,7 @@ Transform:
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3493932583299565606}
   m_Father: {fileID: 919788520709835492}
@@ -246,7 +303,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 919788520709835492}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Pellet 10
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -263,6 +320,7 @@ Transform:
   m_LocalRotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
   m_LocalPosition: {x: -0, y: 0, z: 0}
   m_LocalScale: {x: 100, y: 100, z: 100}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8221239053279140747}
   m_Father: {fileID: 1892084249805663619}
@@ -277,7 +335,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1786436941951660984}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: "\u5168\u3066\u306E\u89AA_end"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -294,6 +352,7 @@ Transform:
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0, y: 0.001, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3493932583299565606}
   m_RootOrder: 0

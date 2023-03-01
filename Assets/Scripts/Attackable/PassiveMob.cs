@@ -4,15 +4,8 @@ using UnityEngine;
 
 public class PassiveMob : Attackable
 {
-    // Start is called before the first frame update
-    void Start()
+    public override void Killed()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        base.Killed();
     }
 }

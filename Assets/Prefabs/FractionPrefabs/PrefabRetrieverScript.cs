@@ -8,6 +8,7 @@ public class PrefabRetrieverScript : MonoBehaviour
     public GameObject PurpleFractionPrefab;
     public GameObject WhiteFractionPrefab;
     public GameObject ShipFractionPrefab;
+    public GameObject HealthBar;
     public static PrefabRetrieverScript Instance;
     public Transform CanvasToDrawOn;
     public PrefabRetrieverScript()
@@ -18,7 +19,8 @@ public class PrefabRetrieverScript : MonoBehaviour
     {
         Instance = this;
     }
-
+    public static Transform Canvas { get { return Instance.CanvasToDrawOn; } }
+    public static GameObject BasicHealthBar { get { return Instance.HealthBar; } }
     public static GameObject GetPrefabFromDestinationType(RadminDestinationEnum Type)
     {
         switch (Type)
