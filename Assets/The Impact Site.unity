@@ -5077,7 +5077,6 @@ MonoBehaviour:
   RadminAttacking: []
   ThingsToSpawnOnDeath:
   - {fileID: 213831591705688238, guid: a43f50f41e66edb48acbe1c937ff7127, type: 3}
-  - {fileID: 213831591705688238, guid: a43f50f41e66edb48acbe1c937ff7127, type: 3}
 --- !u!65 &37045960
 BoxCollider:
   m_ObjectHideFlags: 0
