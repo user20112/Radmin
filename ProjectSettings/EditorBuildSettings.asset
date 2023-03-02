@@ -9,6 +9,6 @@ EditorBuildSettings:
     path: Assets/Scenes/MixAndJam.unity
     guid: d1c3109bdb54ad54c8a2b2838528e640
   - enabled: 1
-    path: Assets/The Impact Site.unity
+    path: Assets/Scenes/The Impact Site.unity
     guid: 8eac9daeb38f5ab49804018601bea8c7
   m_configObjects: {}
