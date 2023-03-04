@@ -15,8 +15,8 @@ MonoBehaviour:
   waterGeomType: 0
   refType: 2
   planarSettings:
-    m_ResolutionMultiplier: 1
-    m_ClipPlaneOffset: 0.24
+    m_ResolutionMultiplier: 0
+    m_ClipPlaneOffset: -0.5
     m_ReflectLayers:
       serializedVersion: 2
       m_Bits: 2147483647
